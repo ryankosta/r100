@@ -1,4 +1,4 @@
-#r100
+# r100
 
 ## Purpose
 - To learn more about computer architecture
