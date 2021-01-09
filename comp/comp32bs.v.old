@@ -1,0 +1,66 @@
+`include "comp32b.v"
+`include "../alu/or32.v"
+module comp32bs(
+	gts,
+	eq,
+	gtu,
+	a,
+	b
+);
+//input
+input wire [31:0] a;
+input wire [31:0] b;
+//output wire
+output wire gts;
+output wire gtu;
+output wire eq;
+//intermediate
+wire a2[31:0];
+wire b2[31:0];
+
+//first level intermediates
+wire [2:0] gtcomp;
+wire [2:0] eqcomp;
+//second level intermediates (where n is odd num)
+//eq =  (a == b)[n] & (a == b)[n-1]
+//gt = (a > b)[n] & (above)
+wire andeqgt2; // (a > b)[n-1] & (a == b)[n]
+wire eq2; // (a > b)[n-1] & (a == b)[n]
+wire gt2; // (a > b)[n-1] & (a == b)[n]
+//third level intermediates
+wire andeqgt3; // (a > b)[n-1] & (a == b)[n]
+wire eq3;
+
+wire notgtc2;
+wire nota31;
+wire noteq3;
+wire gtc1;
+wire gtc2;
+
+
+//first level
+comp16b comp0(.a(a[15:0]),.b(b[15:0]),.gt(gtcomp[0]),.eq(eqcomp[0]));
+comp16b comp1(.a(a[30:15]),.b(b[30:15]),.gt(gtcomp[1]),.eq(eqcomp[1]));
+
+comp1b comp2(.a(a[31]),.b(b[31]),.gt(gtcomp[2]),.eq(eqcomp[2]));
+
+
+// second level
+and(eq2,eqcomp[1],eqcomp[0]);
+and(andeqgt2,eqcomp[1],gtcomp[0]);
+or(gt2,gtcomp[1],andeqgt2);
+// third level
+and(eq3,a[31],b[31]);
+and(eq,eq2,eq3);
+
+
+and(equ,eqcomp[2],eq);
+and(andeqgt3,eqcomp[1],gt2);
+or(gtu,gtcomp[1],andeqgt3);
+
+
+
+
+
+
+endmodule
